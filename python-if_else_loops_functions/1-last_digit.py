@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# This program will assign a random signed number to the variable number each time it is executed and print the last digit of the number stored in the variable number.
+
 import random
 number = random.randint(-10000, 10000)
 last_digit = abs(number) % 10
