@@ -4,6 +4,7 @@
 
 class BaseGeometry:
     """A class with public instance methods area and integer_validator"""
+
     def area(self):
         """raises an Exception with the message area() is not implemented"""
         raise Exception("area() is not implemented")
