@@ -35,10 +35,18 @@ def add_user():
     if username in users:
         return jsonify({"error": "Username already exists"}), 400
     
-    users[username] = user_data
+    # Ensure all required fields are present
+    required_fields = ['username', 'name', 'age', 'city']
+    if not all(field in user_data for field in required_fields):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    # Only store the required fields
+    new_user = {field: user_data[field] for field in required_fields}
+    users[username] = new_user
+    
     return jsonify({
         "message": "User added",
-        "user": user_data
+        "user": new_user
     })
 
 if __name__ == "__main__":
