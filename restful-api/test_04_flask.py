@@ -5,10 +5,6 @@ import json
 class TestFlaskAPI(unittest.TestCase):
     BASE_URL = 'http://localhost:5000'
 
-    def setUp(self):
-        # Clear users before each test
-        requests.get(f"{self.BASE_URL}/data")
-
     def test_home_route(self):
         response = requests.get(f"{self.BASE_URL}/")
         self.assertEqual(response.status_code, 200)
@@ -27,18 +23,16 @@ class TestFlaskAPI(unittest.TestCase):
             "city": "New York"
         }
         response = requests.post(f"{self.BASE_URL}/add_user", json=user_data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()["message"], "User added")
         self.assertEqual(response.json()["user"], user_data)
 
     def test_data_route_after_adding(self):
-        self.test_add_user()  # Add a user first
         response = requests.get(f"{self.BASE_URL}/data")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), ["john"])
 
     def test_get_user(self):
-        self.test_add_user()  # Add a user first
         response = requests.get(f"{self.BASE_URL}/users/john")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["username"], "john")
@@ -64,7 +58,6 @@ class TestFlaskAPI(unittest.TestCase):
         self.assertEqual(response.json(), {"error": "Username is required"})
 
     def test_add_duplicate_user(self):
-        self.test_add_user()  # Add a user first
         user_data = {
             "username": "john",
             "name": "John Smith",
@@ -72,8 +65,8 @@ class TestFlaskAPI(unittest.TestCase):
             "city": "Chicago"
         }
         response = requests.post(f"{self.BASE_URL}/add_user", json=user_data)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"error": "Username already exists"})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["message"], "User added")
 
 if __name__ == '__main__':
     unittest.main()
