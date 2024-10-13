@@ -3,10 +3,7 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 # In-memory storage for users
-users = {
-    "jane": {"username": "jane", "name": "Jane", "age": 28, "city": "Los Angeles"},
-    "john": {"username": "john", "name": "John", "age": 30, "city": "New York"}
-}
+users = {}
 
 @app.route('/')
 def home():
@@ -35,6 +32,9 @@ def add_user():
         return jsonify({"error": "Username is required"}), 400
     
     username = user_data['username']
+    if username in users:
+        return jsonify({"error": "Username already exists"}), 400
+    
     users[username] = user_data
     return jsonify({
         "message": "User added",
