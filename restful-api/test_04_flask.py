@@ -1,22 +1,23 @@
 import unittest
+import requests
 import json
-from task_04_flask import app, users
 
 class TestFlaskAPI(unittest.TestCase):
+    BASE_URL = 'http://localhost:5000'
+
     def setUp(self):
-        self.app = app.test_client()
-        self.app.testing = True 
-        users.clear()  # Reset users before each test
+        # Clear users before each test
+        requests.get(f"{self.BASE_URL}/data")
 
     def test_home_route(self):
-        response = self.app.get('/')
+        response = requests.get(f"{self.BASE_URL}/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode(), "Welcome to the Flask API!")
+        self.assertEqual(response.text, "Welcome to the Flask API!")
 
     def test_data_route_empty(self):
-        response = self.app.get('/data')
+        response = requests.get(f"{self.BASE_URL}/data")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data), [])
+        self.assertEqual(response.json(), [])
 
     def test_add_user(self):
         user_data = {
@@ -25,33 +26,32 @@ class TestFlaskAPI(unittest.TestCase):
             "age": 30,
             "city": "New York"
         }
-        response = self.app.post('/add_user', json=user_data)
+        response = requests.post(f"{self.BASE_URL}/add_user", json=user_data)
         self.assertEqual(response.status_code, 200)
-        response_data = json.loads(response.data)
-        self.assertEqual(response_data["message"], "User added")
-        self.assertEqual(response_data["user"], user_data)
+        self.assertEqual(response.json()["message"], "User added")
+        self.assertEqual(response.json()["user"], user_data)
 
     def test_data_route_after_adding(self):
         self.test_add_user()  # Add a user first
-        response = self.app.get('/data')
+        response = requests.get(f"{self.BASE_URL}/data")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data), ["john"])
+        self.assertEqual(response.json(), ["john"])
 
     def test_get_user(self):
         self.test_add_user()  # Add a user first
-        response = self.app.get('/users/john')
+        response = requests.get(f"{self.BASE_URL}/users/john")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data)["username"], "john")
+        self.assertEqual(response.json()["username"], "john")
 
     def test_get_nonexistent_user(self):
-        response = self.app.get('/users/doesnotexist')
+        response = requests.get(f"{self.BASE_URL}/users/doesnotexist")
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(json.loads(response.data), {"error": "User not found"})
+        self.assertEqual(response.json(), {"error": "User not found"})
 
     def test_status_route(self):
-        response = self.app.get('/status')
+        response = requests.get(f"{self.BASE_URL}/status")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data.decode(), "OK")
+        self.assertEqual(response.text, "OK")
 
     def test_add_user_without_username(self):
         user_data = {
@@ -59,9 +59,9 @@ class TestFlaskAPI(unittest.TestCase):
             "age": 25,
             "city": "Los Angeles"
         }
-        response = self.app.post('/add_user', json=user_data)
+        response = requests.post(f"{self.BASE_URL}/add_user", json=user_data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.data), {"error": "Username is required"})
+        self.assertEqual(response.json(), {"error": "Username is required"})
 
     def test_add_duplicate_user(self):
         self.test_add_user()  # Add a user first
@@ -71,9 +71,9 @@ class TestFlaskAPI(unittest.TestCase):
             "age": 35,
             "city": "Chicago"
         }
-        response = self.app.post('/add_user', json=user_data)
+        response = requests.post(f"{self.BASE_URL}/add_user", json=user_data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.data), {"error": "Username already exists"})
+        self.assertEqual(response.json(), {"error": "Username already exists"})
 
 if __name__ == '__main__':
     unittest.main()
